@@ -364,17 +364,29 @@
         }
 
         async function handleAddPhone() {
-            const phone = newPhoneInput.value.trim();
-            if (!/^\d{11}$/.test(phone)) { showToast('❌ 请输入11位有效手机号', 'error'); return; }
-            try {
-                const list = await fetchPhoneList();
-                if (list.includes(phone)) { showToast('⚠️ 该手机号已激活', 'error'); return; }
-                await addPhoneToGitHub(phone);
-                showToast(`✅ ${phone} 激活成功`, 'success');
-                newPhoneInput.value = '';
-                await renderTable();
-            } catch(e) { showToast(`❌ ${e.message}`, 'error'); }
+    const phone = newPhoneInput.value.trim();
+    if (!/^\d{11}$/.test(phone)) {
+        showToast('❌ 请输入11位有效手机号', 'error');
+        return;
+    }
+    try {
+        // 先获取当前已激活列表
+        const list = await fetchPhoneList();
+        // 检查手机号是否已存在
+        if (list.includes(phone)) {
+            showToast('⚠️ 该手机号已激活，请勿重复添加', 'error');
+            newPhoneInput.value = '';
+            return;
         }
+        // 不存在则添加
+        await addPhoneToGitHub(phone);
+        showToast(`✅ ${phone} 激活成功`, 'success');
+        newPhoneInput.value = '';
+        await renderTable();
+    } catch (e) {
+        showToast(`❌ ${e.message}`, 'error');
+    }
+}
 
         function login() {
             if (adminPwdInput.value.trim() === ADMIN_PASSWORD) {
